@@ -53,8 +53,15 @@ namespace AesEncryptDecrypt
                 decryptedUrl = AesCrypt.DecryptUrl(encryptedUrl);
             }
             Console.WriteLine("Decrypted url: " + decryptedUrl);
-            
-            Console.ReadLine();
+
+
+            Console.WriteLine("************* let's work with byte arrays *************");
+            byte[] byteArray = AesCrypt.GetBytesFromString(text);
+            byte[] encryptedArray = AesCrypt.EncryptByteArray(byteArray);
+            byte[] decryptedArray = AesCrypt.DecryptByteArray(encryptedArray);
+            string textRestored = AesCrypt.GetStringFromBytes(decryptedArray);
+
+            Console.ReadKey();
         }
 
     }

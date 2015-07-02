@@ -13,7 +13,7 @@ namespace AesEncryptDecrypt
     public static class AesCrypt
     {
         private const string UrlKeyString = "3451A9B89"; // Must be 8 characters or more
-        static private readonly byte[] UrlkeyBytes = { 0x11, 0x38, 0x15, 0x34, 0x67, 0xA6, 0xB7, 0x4C }; // Must be 8 bytes
+        internal static readonly byte[] UrlkeyBytes = { 0x11, 0x38, 0x15, 0x34, 0x67, 0xA6, 0xB7, 0x4C }; // Must be 8 bytes
 
         static public string DecryptString(string value, string key)
         {
@@ -97,7 +97,7 @@ namespace AesEncryptDecrypt
             return output;
         }
 
-        static private byte[] BuildRijndaelKey(string value)
+        internal static byte[] BuildRijndaelKey(string value)
         {
             // truncate to a maximum of 32
             if (value.Length > 32)
@@ -117,7 +117,7 @@ namespace AesEncryptDecrypt
 
         } 
 
-        static private byte[] getRijndaelIV()
+        internal static byte[] getRijndaelIV()
         {
             byte[] bufRijndaelIV = { 0xED, 0x15, 0xE0, 0x9E, 0xD8, 0xF7, 0x90, 0x9E, 0x48, 0x93, 0x07, 0x7B, 0xA3, 0x8D, 0x6D, 0xA8 };
 
@@ -200,7 +200,7 @@ namespace AesEncryptDecrypt
             }
         }
 
-        static private string ConvertByteArrayToHex(byte[] data)
+        static public string ConvertByteArrayToHex(byte[] data)
         {
             var results = new StringBuilder();
 
@@ -210,7 +210,9 @@ namespace AesEncryptDecrypt
             return results.ToString();
         }
 
-        static private byte[] ConvertHexToByteArray(string data)
+        // I have concern if this method works correctly 
+        // TODO: test and fix
+        static public byte[] ConvertHexToByteArray(string data)
         {
             byte[] results = new byte[data.Length / 2];
 
@@ -220,6 +222,73 @@ namespace AesEncryptDecrypt
             return results;
         }
 
+
+        internal const string StringPassword = "uhdweylsvst"; // Change this
+        internal static readonly byte[] RgbSalt = { 0x68, 0x34, 0x23, 0x92, 0x59, 0x34, 0x23, 0x45 }; // Change this too
+
+        /// <summary>
+        /// Encrypt bytes to bytes
+        /// idea taken from here
+        /// http://www.splinter.com.au/c-cryptography-encrypting-a-bunch-of-bytes/
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static byte[] EncryptByteArray(byte[] input)
+        {
+            PasswordDeriveBytes pdb = new PasswordDeriveBytes(StringPassword, RgbSalt);
+              
+            MemoryStream ms = new MemoryStream();
+            Aes aes = new AesManaged();
+            aes.Key = pdb.GetBytes(aes.KeySize / 8);
+            aes.IV = pdb.GetBytes(aes.BlockSize / 8);
+            CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write);
+            cs.Write(input, 0, input.Length);
+            cs.Close();
+            return ms.ToArray();
+        }
+
+        /// <summary>
+        /// Decrypt bytes to bytes
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static byte[] DecryptByteArray(byte[] input)
+        {
+            PasswordDeriveBytes pdb = new PasswordDeriveBytes(StringPassword, RgbSalt);
+
+            MemoryStream ms = new MemoryStream();
+            Aes aes = new AesManaged();
+            aes.Key = pdb.GetBytes(aes.KeySize / 8);
+            aes.IV = pdb.GetBytes(aes.BlockSize / 8);
+            CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write);
+            cs.Write(input, 0, input.Length);
+            cs.Close();
+            return ms.ToArray();
+        }
+
+        public static string EncryptStringToString(string input)
+        {
+            return Convert.ToBase64String(EncryptByteArray(Encoding.UTF8.GetBytes(input)));
+        }
+
+        public static string DecryptStringToString(string input)
+        {
+            return Encoding.UTF8.GetString(DecryptByteArray(Convert.FromBase64String(input)));
+        }
+
+        public static byte[] GetBytesFromString(string str)
+        {
+            byte[] bytes = new byte[str.Length * sizeof(char)];
+            System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
+            return bytes;
+        }
+
+        public static string GetStringFromBytes(byte[] bytes)
+        {
+            char[] chars = new char[bytes.Length / sizeof(char)];
+            System.Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
+            return new string(chars);
+        }
     } 
 
 } 
