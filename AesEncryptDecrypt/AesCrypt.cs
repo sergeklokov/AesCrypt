@@ -225,7 +225,7 @@ namespace AesEncryptDecrypt
 
         internal const string StringPassword = "uhdweylsvst"; // Change this
         internal static readonly byte[] RgbSalt = { 0x68, 0x34, 0x23, 0x92, 0x59, 0x34, 0x23, 0x45 }; // Change this too
-
+        
         /// <summary>
         /// Encrypt bytes to bytes
         /// idea taken from here

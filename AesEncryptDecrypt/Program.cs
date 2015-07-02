@@ -61,6 +61,14 @@ namespace AesEncryptDecrypt
             byte[] decryptedArray = AesCrypt.DecryptByteArray(encryptedArray);
             string textRestored = AesCrypt.GetStringFromBytes(decryptedArray);
 
+            // let's convert it to Base 64 for storing in web.config
+            var rgbSalt = System.Convert.ToBase64String(AesCrypt.RgbSalt, 0, AesCrypt.RgbSalt.Length);
+
+            // convert it back
+            var byteRgbSalt = System.Convert.FromBase64String(rgbSalt);
+
+            Console.WriteLine("rgbSalt = {0}", rgbSalt);
+
             Console.ReadKey();
         }
 
